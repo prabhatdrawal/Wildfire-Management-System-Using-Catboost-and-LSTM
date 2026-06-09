@@ -7,9 +7,8 @@ from datetime import datetime, timedelta
 import time
 import math
 
-# ------------------------------
+
 # Configuration
-# ------------------------------
 # Paths
 SHAPEFILE_PATH = Path("/Users/prabhatrawal/Minor_project_code/polygon_file/actual_timezone_designated_district_using_EPSG_32644.shp")
 GEE_KEY_PATH = Path("/Users/prabhatrawal/Minor_project_code/keys/gee_project_id.txt")
@@ -19,7 +18,7 @@ OUTPUT_BASE = Path("/Users/prabhatrawal/Minor_project_code/data/era5_data")
 START_YEAR = 2000
 END_YEAR = 2025
 
-# Create output directory
+# output directory
 OUTPUT_BASE.mkdir(parents=True, exist_ok=True)
 
 print("=" * 60)
@@ -28,9 +27,8 @@ print("=" * 60)
 print("OPTIMIZED VERSION - Processing year by year")
 print(f"Date range: {START_YEAR} to {END_YEAR}")
 
-# ------------------------------
+
 # Initialize Google Earth Engine
-# ------------------------------
 print("\n[1/6] Initializing Google Earth Engine...")
 try:
     # Read project ID from file
@@ -45,14 +43,13 @@ except Exception as e:
     print("Please run 'earthengine authenticate' in terminal first")
     exit(1)
 
-# ------------------------------
+
 # Load and Process Shapefile
-# ------------------------------
 print("\n[2/6] Loading shapefile and creating zones...")
 gdf = gpd.read_file(SHAPEFILE_PATH)
 print(f"✓ Loaded shapefile with {len(gdf)} districts")
 
-# Import zone creation code
+# Import zone creation logic
 from shapely.geometry import box
 from shapely.ops import unary_union
 
@@ -143,9 +140,8 @@ for idx, row in gdf.iterrows():
         district_zones[district_name] = zones_gdf
         print(f"  ✓ {district_name}: {len(zones_gdf)} zones")
 
-# ------------------------------
+
 # Convert geometries to GEE format
-# ------------------------------
 print("\n[3/6] Converting geometries to GEE format...")
 
 def shapely_to_ee_geometry(shapely_geom, source_crs):
@@ -167,9 +163,8 @@ def shapely_to_ee_geometry(shapely_geom, source_crs):
     else:
         raise ValueError(f"Unsupported geometry type: {geom_wgs84.geom_type}")
 
-# ------------------------------
+
 # ERA5-Land processing functions
-# ------------------------------
 print("\n[4/6] Setting up ERA5-Land processing...")
 
 def calculate_derived_variables(image):
@@ -344,9 +339,8 @@ def extract_zone_data_optimized(zone_geometry, zone_id, district_name, year):
         print(f"  ✗ Error extracting data for zone {zone_id}, year {year}: {e}")
         return pd.DataFrame()
 
-# ------------------------------
+
 # Process all districts and zones - BY YEAR
-# ------------------------------
 print("\n[5/6] Extracting ERA5-Land data for all zones (year by year)...")
 
 for district_name, zones_gdf in district_zones.items():
@@ -430,9 +424,8 @@ for district_name, zones_gdf in district_zones.items():
     else:
         print(f"\n⚠ No data extracted for {district_name}")
 
-# ------------------------------
+
 # Summary
-# ------------------------------
 print("\n" + "="*60)
 print("[6/6] EXTRACTION COMPLETE!")
 print("="*60)
